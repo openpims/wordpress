@@ -1,0 +1,41 @@
+[
+  {
+    "category": "necessary",
+    "text": "Unbedingt erforderliche Cookies",
+    "mapping": "necessary",
+    "vendors": []
+  },
+  {
+    "category": "marketing",
+    "text": "Cookies für Marketingzwecke",
+    "mapping": "marketing",
+    "vendors": [
+      {
+        "vendor": "Datawrapper GmbH",
+        "url" : "https://www.datawrapper.de/privacy"
+      },
+      {
+        "vendor": "Facebook Video",
+        "url" : "https://www.facebook.com/privacy"
+      },
+      {
+        "vendor": "Kaltura",
+        "url" : "https://corp.kaltura.com/legal/privacy/privacy-policy/"
+      }
+    ]
+  },
+  {
+    "category": "functional",
+    "text": "Funktionale Cookies",
+    "mapping": "functional"
+  },
+  {
+    "category": "analytics",
+    "text": "Analytics-Cookies",
+    "mapping": "analytics"
+  },
+  {
+    "category": "test",
+    "text": "Test-Cookies"
+  }
+]
