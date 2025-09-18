@@ -27,7 +27,6 @@ The plugin displays a modal to users who haven't configured their privacy settin
 
 **How it works:**
 
-
 1. When a user visits your site, the plugin checks if they have configured their privacy settings
 2. If not configured, a modal appears directing them to OpenPIMS
 3. Users configure their preferences once on OpenPIMS
