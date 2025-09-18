@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package openPIMS
+ * @package OpenPIMS
  */
 
 /*
-Plugin Name: openPIMS
+Plugin Name: OpenPIMS
 Plugin URI: https://openpims.de/
-Description: openPIMS plugin
+Description: OpenPIMS plugin
 Version: 0.0.1
 Author: Stefan Böck
 Author URI: https://stefan.boeck.name
@@ -22,6 +22,7 @@ $url_data = parse_url( home_url() );
 $host = $url_data['host'];
 $param = "?url=https://" . $host . "/openpims.json";
 
+//Fallback Host
 $openpims_host = 'openpims.de';
 
 $headers = array_change_key_case(getallheaders(), CASE_LOWER);
@@ -96,15 +97,14 @@ if(array_key_exists('x-openpims', $headers)) {
             Wir nutzen einen externen Service, der Dir ermöglicht, die Verwaltung von von uns eingesetzten Cookies und anderen Tracking-Tools zu steuern.
         </p>
         <p>
-            Bei <a href="https://<?php echo $openpims_host; ?>/register?url=<?php echo $host; ?>" target="_blank">openPIMS</a> kannst Du einmalig alle benötigten Einstellungen vornehmen und dann hierher zurückkehren. Wir freuen uns bereits auf Deinen nächsten Besuch.
+            Bei <a href="https://<?php echo esc_url($openpims_host); ?>/register?url=<?php echo esc_url($host); ?>" target="_blank">OpenPIMS</a> kannst Du einmalig alle benötigten Einstellungen vornehmen und dann hierher zurückkehren. Wir freuen uns bereits auf Deinen nächsten Besuch.
         </p>
         <p>
             Sobald dies erledigt ist, wird diese Benachrichtigung nicht mehr für Dich sichtbar sein.
         </p>
         <center>
-            <a href="https://<?php echo $openpims_host; ?>/register?url=<?php echo $host; ?>" target="_blank">
-                <img src="https://wp.test/wp-content/uploads/2023/07/cookie-32.png">
-                openPIMS
+            <a href="https://<?php echo esc_url($openpims_host); ?>/register?url=<?php echo esc_url($host); ?>" target="_blank">
+                🍪 OpenPIMS
             </a>
         </center>
     </div>
@@ -150,5 +150,3 @@ if( !is_admin() ) {
 <?php
     }
 }
-
-
