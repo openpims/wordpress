@@ -16,7 +16,7 @@ OpenPIMS WordPress Plugin enables websites to integrate with the [OpenPIMS servi
 - 🔒 **External Privacy Management** - Integration with OpenPIMS.de service
 - 🍪 **Cookie Consent Management** - Configurable cookie categories (necessary, marketing, functional, analytics)
 - 🚀 **Lightweight Implementation** - No database dependencies, minimal performance impact
-- 🔍 **HTTP Header Detection** - Uses `x-openpims` headers for user registration status
+- 🔍 **Multiple Detection Methods** - Checks `x-openpims` header, cookie, and User-Agent for registration status
 - 🌍 **Internationalization Ready** - i18n support with text domain `openpims`
 - 🛡️ **Security First** - Follows WordPress security best practices
 - ⚙️ **Zero Configuration** - Works out of the box with sensible defaults
@@ -95,11 +95,19 @@ Edit the `openpims.json` file to define your cookie categories and vendors:
 
 ```mermaid
 graph TD
-    A[User visits site] --> B{Check x-openpims header}
-    B -->|Header exists| C[Send API request to OpenPIMS]
+    A[User visits site] --> B{Check for OpenPIMS}
+    B --> B1[Check x-openpims header]
+    B --> B2[Check x-openpims cookie]
+    B --> B3[Check User-Agent]
+    B1 -->|Found| C[Send API request to OpenPIMS]
+    B2 -->|Found| C
+    B3 -->|Found| C
+    B1 -->|Not found| F[Display registration modal]
+    B2 -->|Not found| F
+    B3 -->|Not found| F
     C --> D{User registered?}
     D -->|Yes - 200 OK| E[No modal shown]
-    D -->|No| F[Display registration modal]
+    D -->|No| F
     F --> G[User clicks to OpenPIMS]
     G --> H[Configure preferences]
     H --> I[Return to site]
@@ -113,6 +121,13 @@ graph TD
 - **API Communication** - Uses `wp_remote_get()` for HTTP requests
 - **Asset Management** - Proper enqueueing with `wp_localize_script()`
 - **Security** - Input sanitization and output escaping
+
+### OpenPIMS Detection Priority
+
+The plugin checks for OpenPIMS registration in this order:
+1. **HTTP Header**: `x-openpims` header
+2. **Cookie**: `x-openpims` cookie value
+3. **User-Agent**: Pattern matching for `OpenPIMS/X.X.X (+https://example.com)`
 
 ### Key Files
 

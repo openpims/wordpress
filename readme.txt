@@ -19,7 +19,7 @@ OpenPIMS is a WordPress plugin that integrates with the OpenPIMS external servic
 
 * External privacy management service integration via OpenPIMS.de
 * Cookie consent modal display for first-time visitors
-* Header-based detection using x-openpims HTTP headers
+* Multiple detection methods: x-openpims header, cookie, and User-Agent
 * Configurable cookie categories through openpims.json
 * Automatic API communication with OpenPIMS service
 * Lightweight implementation with no database requirements
@@ -28,7 +28,10 @@ OpenPIMS is a WordPress plugin that integrates with the OpenPIMS external servic
 
 **How it works:**
 
-1. When a user visits your site, the plugin checks for the x-openpims HTTP header
+1. When a user visits your site, the plugin checks for OpenPIMS registration via:
+   - x-openpims HTTP header
+   - x-openpims cookie
+   - OpenPIMS User-Agent pattern
 2. The plugin sends a request to the OpenPIMS service with your site's configuration
 3. If the user hasn't registered their preferences, a modal appears directing them to OpenPIMS
 4. Users configure their privacy preferences once on the OpenPIMS platform
@@ -92,7 +95,7 @@ Yes, the plugin is internationalization-ready with text domain 'openpims'. Curre
 
 = 0.1.0 =
 * Enhanced modal functionality with improved styling
-* Added x-openpims HTTP header detection
+* Added multiple detection methods: x-openpims header, cookie, and User-Agent
 * Implemented singleton pattern for better performance
 * Added comprehensive error handling
 * Improved WordPress coding standards compliance

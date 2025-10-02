@@ -91,52 +91,70 @@ class OpenPIMS {
     }
 
     /**
-     * Check for OpenPIMS header
+     * Check for OpenPIMS header, cookie, or User-Agent
      */
     private function check_openpims_header() {
         // Get all headers in a WordPress-compatible way
         $headers = $this->get_all_headers();
 
+        // Check for OpenPIMS URL from multiple sources
+        $url = null;
+
+        // 1. Check for x-openpims header
         if (isset($headers['x-openpims']) && !empty($headers['x-openpims'])) {
             $url = sanitize_url($headers['x-openpims']);
+        }
+        // 2. Check for x-openpims cookie
+        elseif (isset($_COOKIE['x-openpims']) && !empty($_COOKIE['x-openpims'])) {
+            $url = sanitize_url($_COOKIE['x-openpims']);
+        }
+        // 3. Check for OpenPIMS in User-Agent
+        elseif (isset($headers['user-agent']) && !empty($headers['user-agent'])) {
+            $user_agent = $headers['user-agent'];
+            // Look for pattern: OpenPIMS/X.X.X (+https://example.com)
+            if (preg_match('/OpenPIMS\/[\d.]+\s+\(\+([^)]+)\)/', $user_agent, $matches)) {
+                if (isset($matches[1])) {
+                    $url = sanitize_url($matches[1]);
+                }
+            }
+        }
 
-            if (!empty($url)) {
-                // Extract host from user URL
-                $url_user_data = parse_url($url);
-                if (isset($url_user_data['host'])) {
-                    $user_host = $url_user_data['host'];
-                    $parts = explode('.', $user_host);
-                    if (count($parts) > 1) {
-                        array_shift($parts);
-                        $this->openpims_host = implode('.', $parts);
-                    }
+        if (!empty($url)) {
+            // Extract host from user URL
+            $url_user_data = parse_url($url);
+            if (isset($url_user_data['host'])) {
+                $user_host = $url_user_data['host'];
+                $parts = explode('.', $user_host);
+                if (count($parts) > 1) {
+                    array_shift($parts);
+                    $this->openpims_host = implode('.', $parts);
+                }
 
-                    // Build request URL
-                    $param = "?url=https://" . $this->site_host . "/openpims.json";
-                    $request_url = $url . $param;
+                // Build request URL
+                $param = "?url=https://" . $this->site_host . "/openpims.json";
+                $request_url = $url . $param;
 
-                    // Make the request with proper error handling
-                    $response = wp_remote_get($request_url, array(
-                        'timeout' => 10,
-                        'sslverify' => true,
-                        'user-agent' => 'OpenPIMS Plugin/' . OPENPIMS_VERSION
-                    ));
+                // Make the request with proper error handling
+                $response = wp_remote_get($request_url, array(
+                    'timeout' => 10,
+                    'sslverify' => true,
+                    'user-agent' => 'OpenPIMS Plugin/' . OPENPIMS_VERSION
+                ));
 
-                    if (!is_wp_error($response)) {
-                        $body = wp_remote_retrieve_body($response);
-                        $status_code = wp_remote_retrieve_response_code($response);
+                if (!is_wp_error($response)) {
+                    $body = wp_remote_retrieve_body($response);
+                    $status_code = wp_remote_retrieve_response_code($response);
 
-                        if ($status_code === 200 && !empty($body)) {
-                            $decoded = json_decode($body, true);
-                            if (json_last_error() === JSON_ERROR_NONE) {
-                                $this->data = $decoded;
-                                $this->show_modal = false;
-                            }
+                    if ($status_code === 200 && !empty($body)) {
+                        $decoded = json_decode($body, true);
+                        if (json_last_error() === JSON_ERROR_NONE) {
+                            $this->data = $decoded;
+                            $this->show_modal = false;
                         }
-                    } else {
-                        // Log error for debugging (optional)
-                        error_log('OpenPIMS Request Error: ' . $response->get_error_message());
                     }
+                } else {
+                    // Log error for debugging (optional)
+                    error_log('OpenPIMS Request Error: ' . $response->get_error_message());
                 }
             }
         }
