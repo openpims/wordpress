@@ -3,7 +3,7 @@
 [![WordPress Version](https://img.shields.io/badge/WordPress-4.0%2B-blue.svg)](https://wordpress.org/)
 [![PHP Version](https://img.shields.io/badge/PHP-7.0%2B-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPLv2-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Version](https://img.shields.io/badge/Version-0.1.0-orange.svg)](https://github.com/portalix/wordpress)
+[![Version](https://img.shields.io/badge/Version-0.1.0-orange.svg)](https://github.com/openpims/wordpress)
 
 A WordPress plugin that integrates with the OpenPIMS external privacy management service to provide centralized cookie consent and GDPR compliance across multiple websites.
 
@@ -16,7 +16,7 @@ OpenPIMS WordPress Plugin enables websites to integrate with the [OpenPIMS servi
 - 🔒 **External Privacy Management** - Integration with OpenPIMS.de service
 - 🍪 **Cookie Consent Management** - Configurable cookie categories (necessary, marketing, functional, analytics)
 - 🚀 **Lightweight Implementation** - No database dependencies, minimal performance impact
-- 🔍 **Multiple Detection Methods** - Checks `x-openpims` header, cookie, and User-Agent for registration status
+- 🔍 **Multiple Detection Methods** - Checks X-OpenPIMS header, User-Agent signal (Safari), and cookie for registration status
 - 🌍 **Internationalization Ready** - i18n support with text domain `openpims`
 - 🛡️ **Security First** - Follows WordPress security best practices
 - ⚙️ **Zero Configuration** - Works out of the box with sensible defaults
@@ -34,7 +34,7 @@ OpenPIMS WordPress Plugin enables websites to integrate with the [OpenPIMS servi
 
 1. Clone or download this repository:
 ```bash
-git clone https://github.com/portalix/wordpress.git openpims
+git clone https://github.com/openpims/wordpress.git openpims
 ```
 
 2. Upload to your WordPress plugins directory:
@@ -95,23 +95,24 @@ Edit the `openpims.json` file to define your cookie categories and vendors:
 
 ```mermaid
 graph TD
-    A[User visits site] --> B{Check for OpenPIMS}
-    B --> B1[Check x-openpims header]
-    B --> B2[Check x-openpims cookie]
-    B --> B3[Check User-Agent]
-    B1 -->|Found| C[Send API request to OpenPIMS]
-    B2 -->|Found| C
+    A[User visits site] --> B{Check for OpenPIMS signal}
+    B --> B1[Check X-OpenPIMS header<br/>Chrome/Firefox/Chromium]
+    B --> B2[Check User-Agent signal<br/>Safari]
+    B --> B3[Check x-openpims cookie<br/>Legacy fallback]
+    B1 -->|Found| C[Extract OpenPIMS URL]
+    B2 -->|Pattern: OpenPIMS/1.0 +url| C
     B3 -->|Found| C
     B1 -->|Not found| F[Display registration modal]
     B2 -->|Not found| F
     B3 -->|Not found| F
-    C --> D{User registered?}
-    D -->|Yes - 200 OK| E[No modal shown]
-    D -->|No| F
-    F --> G[User clicks to OpenPIMS]
-    G --> H[Configure preferences]
-    H --> I[Return to site]
-    I --> E
+    C --> D[Send API request to OpenPIMS URL]
+    D --> E{User registered?}
+    E -->|Yes - 200 OK| G[No modal shown]
+    E -->|No| F
+    F --> H[User clicks to OpenPIMS]
+    H --> I[Configure preferences]
+    I --> J[Return to site]
+    J --> G
 ```
 
 ### Plugin Architecture
@@ -124,10 +125,23 @@ graph TD
 
 ### OpenPIMS Detection Priority
 
-The plugin checks for OpenPIMS registration in this order:
-1. **HTTP Header**: `x-openpims` header
-2. **Cookie**: `x-openpims` cookie value
-3. **User-Agent**: Pattern matching for `OpenPIMS/X.X.X (+https://example.com)`
+The plugin checks for OpenPIMS signals in this order:
+
+1. **X-OpenPIMS Header** (Chrome, Firefox, Chromium)
+   - Header: `X-OpenPIMS: https://token.openpims.de`
+   - Standard method for browsers supporting custom headers
+
+2. **User-Agent Signal** (Safari)
+   - Pattern: `Mozilla/5.0 (...) OpenPIMS/1.0 (+https://token.openpims.de)`
+   - Regex: `/OpenPIMS\/[\d.]+\s+\(\+([^)]+)\)/`
+   - Used because Safari doesn't support custom header modification
+   - Extracted in `check_openpims_header()` method (line 112-120)
+
+3. **x-openpims Cookie** (Legacy fallback)
+   - Cookie: `x-openpims=https://token.openpims.de`
+   - Maintained for backward compatibility
+
+The plugin extracts the OpenPIMS URL from any of these sources and queries it with `?url=https://{site}/openpims.json` to verify user registration.
 
 ### Key Files
 
@@ -213,13 +227,13 @@ This project is licensed under the GPLv2 or later - see the [LICENSE](LICENSE) f
 ## 📞 Support
 
 - **Plugin Homepage**: [https://openpims.de/](https://openpims.de/)
-- **Issues**: [GitHub Issues](https://github.com/portalix/wordpress/issues)
+- **Issues**: [GitHub Issues](https://github.com/openpims/wordpress/issues)
 - **WordPress Plugin Directory**: (Coming soon)
 
 ## 👤 Author
 
-**Portalix**
-- GitHub: [@portalix](https://github.com/portalix)
+**Stefan Böck**
+- GitHub: [@stefanboeck](https://github.com/stefanboeck)
 
 ## 🙏 Acknowledgments
 

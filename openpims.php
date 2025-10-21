@@ -91,25 +91,17 @@ class OpenPIMS {
     }
 
     /**
-     * Check for OpenPIMS header, cookie, or User-Agent
+     * Check for OpenPIMS User-Agent
      */
     private function check_openpims_header() {
         // Get all headers in a WordPress-compatible way
         $headers = $this->get_all_headers();
 
-        // Check for OpenPIMS URL from multiple sources
+        // Check for OpenPIMS URL from User-Agent only
         $url = null;
 
-        // 1. Check for x-openpims header
-        if (isset($headers['x-openpims']) && !empty($headers['x-openpims'])) {
-            $url = sanitize_url($headers['x-openpims']);
-        }
-        // 2. Check for x-openpims cookie
-        elseif (isset($_COOKIE['x-openpims']) && !empty($_COOKIE['x-openpims'])) {
-            $url = sanitize_url($_COOKIE['x-openpims']);
-        }
-        // 3. Check for OpenPIMS in User-Agent
-        elseif (isset($headers['user-agent']) && !empty($headers['user-agent'])) {
+        // Check for OpenPIMS in User-Agent
+        if (isset($headers['user-agent']) && !empty($headers['user-agent'])) {
             $user_agent = $headers['user-agent'];
             // Look for pattern: OpenPIMS/X.X.X (+https://example.com)
             if (preg_match('/OpenPIMS\/[\d.]+\s+\(\+([^)]+)\)/', $user_agent, $matches)) {
