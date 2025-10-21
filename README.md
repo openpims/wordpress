@@ -16,7 +16,7 @@ OpenPIMS WordPress Plugin enables websites to integrate with the [OpenPIMS servi
 - 🔒 **External Privacy Management** - Integration with OpenPIMS.de service
 - 🍪 **Cookie Consent Management** - Configurable cookie categories (necessary, marketing, functional, analytics)
 - 🚀 **Lightweight Implementation** - No database dependencies, minimal performance impact
-- 🔍 **Multiple Detection Methods** - Checks X-OpenPIMS header, User-Agent signal (Safari), and cookie for registration status
+- 🔍 **User-Agent Detection** - Checks User-Agent signal for OpenPIMS registration status
 - 🌍 **Internationalization Ready** - i18n support with text domain `openpims`
 - 🛡️ **Security First** - Follows WordPress security best practices
 - ⚙️ **Zero Configuration** - Works out of the box with sensible defaults
@@ -95,16 +95,9 @@ Edit the `openpims.json` file to define your cookie categories and vendors:
 
 ```mermaid
 graph TD
-    A[User visits site] --> B{Check for OpenPIMS signal}
-    B --> B1[Check X-OpenPIMS header<br/>Chrome/Firefox/Chromium]
-    B --> B2[Check User-Agent signal<br/>Safari]
-    B --> B3[Check x-openpims cookie<br/>Legacy fallback]
-    B1 -->|Found| C[Extract OpenPIMS URL]
-    B2 -->|Pattern: OpenPIMS/1.0 +url| C
-    B3 -->|Found| C
-    B1 -->|Not found| F[Display registration modal]
-    B2 -->|Not found| F
-    B3 -->|Not found| F
+    A[User visits site] --> B{Check User-Agent for OpenPIMS signal}
+    B -->|Pattern: OpenPIMS/1.0 +url| C[Extract OpenPIMS URL]
+    B -->|Not found| F[Display registration modal]
     C --> D[Send API request to OpenPIMS URL]
     D --> E{User registered?}
     E -->|Yes - 200 OK| G[No modal shown]
@@ -123,25 +116,17 @@ graph TD
 - **Asset Management** - Proper enqueueing with `wp_localize_script()`
 - **Security** - Input sanitization and output escaping
 
-### OpenPIMS Detection Priority
+### OpenPIMS Detection Method
 
-The plugin checks for OpenPIMS signals in this order:
+The plugin detects OpenPIMS registration via the User-Agent header:
 
-1. **X-OpenPIMS Header** (Chrome, Firefox, Chromium)
-   - Header: `X-OpenPIMS: https://token.openpims.de`
-   - Standard method for browsers supporting custom headers
+**User-Agent Signal**
+- Pattern: `Mozilla/5.0 (...) OpenPIMS/1.0 (+https://token.openpims.de)`
+- Regex: `/OpenPIMS\/[\d.]+\s+\(\+([^)]+)\)/`
+- Works across all browsers (Chrome, Firefox, Safari, Edge, etc.)
+- Extracted in `check_openpims_header()` method (line 104-112)
 
-2. **User-Agent Signal** (Safari)
-   - Pattern: `Mozilla/5.0 (...) OpenPIMS/1.0 (+https://token.openpims.de)`
-   - Regex: `/OpenPIMS\/[\d.]+\s+\(\+([^)]+)\)/`
-   - Used because Safari doesn't support custom header modification
-   - Extracted in `check_openpims_header()` method (line 112-120)
-
-3. **x-openpims Cookie** (Legacy fallback)
-   - Cookie: `x-openpims=https://token.openpims.de`
-   - Maintained for backward compatibility
-
-The plugin extracts the OpenPIMS URL from any of these sources and queries it with `?url=https://{site}/openpims.json` to verify user registration.
+The plugin extracts the OpenPIMS URL from the User-Agent string and queries it with `?url=https://{site}/openpims.json` to verify user registration.
 
 ### Key Files
 
@@ -182,11 +167,9 @@ This plugin follows:
 ### Testing Modal Display
 
 To test the modal display:
-1. Clear browser cookies
-2. Remove `x-openpims` header if present
-3. Visit the site - modal should appear
-4. Register on OpenPIMS
-5. Return to site - modal should not appear
+1. Visit the site without OpenPIMS User-Agent signal - modal should appear
+2. Register on OpenPIMS
+3. Return to site with OpenPIMS browser extension/signal - modal should not appear
 
 ## 📝 API Endpoints
 
